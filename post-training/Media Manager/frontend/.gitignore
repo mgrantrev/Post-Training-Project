@@ -1,0 +1,14 @@
+# Node.js
+node_modules/
+dist/
+test-results/
+playwright-report/
+.angular/
+
+# IDEs
+.idea/
+.vscode/
+*.iml
+
+# Logs
+*.log

@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Cache Gradle packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Build (Gradle)
+        run: ./gradlew build --no-daemon
+
+      - name: Run unit tests
+        run: ./gradlew test --no-daemon
+
+      - name: Build Docker image
+        run: docker build -t media-manager-backend:latest .
+
+      - name: Deploy to Railway (optional)
+        if: ${{ secrets.RAILWAY_API_KEY != '' }}
+        env:
+          RAILWAY_API_KEY: ${{ secrets.RAILWAY_API_KEY }}
+        run: |
+          curl -sL https://railway.app/install.sh | sh
+          ~/.railway/bin/railway login --apiKey "$RAILWAY_API_KEY"
+          ~/.railway/bin/railway up --service backend --detach

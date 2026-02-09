@@ -1,0 +1,11 @@
+.env
+pgdata/
+.DS_Store
+build/
+.gradle/
+out/
+target/
+.idea/
+.vscode/
+node_modules/
+dist/

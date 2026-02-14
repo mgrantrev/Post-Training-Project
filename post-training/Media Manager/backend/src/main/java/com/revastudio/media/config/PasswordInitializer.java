@@ -21,7 +21,7 @@ public class PasswordInitializer {
                 User customer = new User();
                 customer.setUsername("customer1");
                 customer.setPassword(passwordEncoder.encode("password"));
-                customer.setRole("CUSTOMER");
+                customer.getRoles().add("CUSTOMER");
                 customer.setCustomerId(1);
                 userRepository.save(customer);
                 log.info("Created seed user customer1");
@@ -30,7 +30,7 @@ public class PasswordInitializer {
                 User employee = new User();
                 employee.setUsername("employee1");
                 employee.setPassword(passwordEncoder.encode("password"));
-                employee.setRole("EMPLOYEE");
+                employee.getRoles().add("EMPLOYEE");
                 employee.setEmployeeId(1);
                 userRepository.save(employee);
                 log.info("Created seed user employee1");

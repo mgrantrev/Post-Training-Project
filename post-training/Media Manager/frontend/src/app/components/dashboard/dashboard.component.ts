@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CustomerService } from '../../services/customer.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -13,12 +14,18 @@ import { CustomerService } from '../../services/customer.service';
       <header>
         <h1>Media Manager Dashboard</h1>
         <div class="user-info">
-            <span data-testid="user-role">{{ role() }}</span>
+            <div class="role-switcher" *ngIf="availableRoles().length > 1">
+              <label>View as: </label>
+              <select [ngModel]="selectedRole()" (ngModelChange)="onRoleChange($event)">
+                <option *ngFor="let r of availableRoles()" [value]="r">{{ r }}</option>
+              </select>
+            </div>
+            <span *ngIf="availableRoles().length === 1" data-testid="user-role">{{ selectedRole() }}</span>
             <button data-testid="logout-button" (click)="onLogout()">Logout</button>
         </div>
       </header>
       
-      <div *ngIf="role() === 'Customer'">
+      <div *ngIf="selectedRole() === 'CUSTOMER'">
         <nav class="sub-nav">
           <button data-testid="get-support-button" (click)="router.navigate(['/support'])">Get Support</button>
         </nav>
@@ -35,7 +42,7 @@ import { CustomerService } from '../../services/customer.service';
         </div>
       </div>
       
-      <div *ngIf="role() === 'Employee'" data-testid="sales-metrics-view">
+      <div *ngIf="selectedRole() === 'EMPLOYEE'" data-testid="sales-metrics-view">
         <nav class="sub-nav">
           <button data-testid="manage-tickets-button" (click)="router.navigate(['/support'])">Manage Support Tickets</button>
         </nav>
@@ -79,6 +86,8 @@ import { CustomerService } from '../../services/customer.service';
     header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; margin-bottom: 20px; padding-bottom: 10px; }
     .user-info { display: flex; align-items: center; gap: 15px; }
     .user-info span { font-weight: bold; color: #444; }
+    .role-switcher { display: flex; align-items: center; gap: 8px; }
+    .role-switcher select { padding: 4px; border-radius: 4px; border: 1px solid #ccc; }
     .sub-nav { margin-bottom: 20px; }
     .search-box { margin-bottom: 20px; }
     .track-item { padding: 12px; border-bottom: 1px solid #eee; }
@@ -95,7 +104,8 @@ import { CustomerService } from '../../services/customer.service';
   `]
 })
 export class DashboardComponent implements OnInit {
-  role = signal<string | null>('');
+  availableRoles = signal<string[]>([]);
+  selectedRole = signal<string | null>(null);
   tracks = signal<any[]>([]);
   searchText = signal('');
   mockSales = [
@@ -113,16 +123,28 @@ export class DashboardComponent implements OnInit {
     );
   });
 
-  constructor(public router: Router, private customerService: CustomerService) { }
+  constructor(public router: Router, private customerService: CustomerService, private authService: AuthService) { }
 
   ngOnInit() {
-    this.role.set(localStorage.getItem('user_role'));
-    if (!this.role()) {
+    const roles = this.authService.getRoles();
+    this.availableRoles.set(roles);
+
+    if (roles.length === 0) {
       this.router.navigate(['/login']);
       return;
     }
 
-    if (this.role() === 'Customer') {
+    this.selectedRole.set(roles[0]);
+    this.loadDataForRole(roles[0]);
+  }
+
+  onRoleChange(newRole: string) {
+    this.selectedRole.set(newRole);
+    this.loadDataForRole(newRole);
+  }
+
+  loadDataForRole(role: string) {
+    if (role === 'CUSTOMER') {
       this.customerService.getTracks(1).subscribe({
         next: tracks => this.tracks.set(tracks),
         error: err => console.error('Failed to load tracks:', err)
@@ -132,7 +154,7 @@ export class DashboardComponent implements OnInit {
 
   onLogout() {
     localStorage.removeItem('jwt');
-    localStorage.removeItem('user_role');
+    localStorage.removeItem('user_roles');
     this.router.navigate(['/login']);
   }
 }

@@ -1,6 +1,5 @@
 package com.revastudio.media.service;
 
-import com.revastudio.media.entity.User;
 import com.revastudio.media.repository.UserRepository;
 import com.revastudio.media.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +19,6 @@ public class AuthService {
     public Optional<String> login(String username, String rawPassword) {
         return userRepository.findByUsername(username)
                 .filter(u -> passwordEncoder.matches(rawPassword, u.getPassword()))
-                .map(u -> jwtUtil.generateToken(u.getUsername(), u.getRole()));
+                .map(u -> jwtUtil.generateToken(u.getUsername(), u.getRoles()));
     }
 }

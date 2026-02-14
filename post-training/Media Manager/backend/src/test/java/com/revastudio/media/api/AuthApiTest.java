@@ -38,7 +38,7 @@ public class AuthApiTest {
             User user = new User();
             user.setUsername("customer1");
             user.setPassword(passwordEncoder.encode("password"));
-            user.setRole("CUSTOMER");
+            user.getRoles().add("CUSTOMER");
             user.setCustomerId(1);
             userRepository.save(user);
         }

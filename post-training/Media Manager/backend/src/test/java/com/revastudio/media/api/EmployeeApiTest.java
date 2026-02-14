@@ -46,7 +46,7 @@ public class EmployeeApiTest {
             User u = new User();
             u.setUsername("employee1");
             u.setPassword(passwordEncoder.encode("password"));
-            u.setRole("EMPLOYEE");
+            u.getRoles().add("EMPLOYEE");
             u.setEmployeeId(1);
             return userRepository.save(u);
         });

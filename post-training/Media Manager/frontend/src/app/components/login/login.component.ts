@@ -1,13 +1,13 @@
 import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   template: `
     <div class="login-container">
       <h2>Media Manager Login</h2>
@@ -23,6 +23,9 @@ import { AuthService } from '../../services/auth.service';
         </div>
         <button type="submit" data-testid="login-button">Login</button>
       </form>
+      <div class="register-link">
+        Don't have an account? <a routerLink="/register">Register here</a>
+      </div>
     </div>
   `,
   styles: [`
@@ -31,6 +34,9 @@ import { AuthService } from '../../services/auth.service';
     div { margin-bottom: 15px; }
     input { width: 100%; padding: 8px; box-sizing: border-box; }
     button { width: 100%; padding: 10px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    .register-link { margin-top: 15px; text-align: center; font-size: 0.9rem; }
+    .register-link a { color: #007bff; text-decoration: none; }
+    .register-link a:hover { text-decoration: underline; }
   `]
 })
 export class LoginComponent {
@@ -45,8 +51,6 @@ export class LoginComponent {
     this.authService.login(this.username, this.password).subscribe({
       next: (success: boolean) => {
         if (success) {
-          const role = this.username.includes('employee') ? 'Employee' : 'Customer';
-          localStorage.setItem('user_role', role);
           this.router.navigate(['/dashboard']);
         } else {
           this.errorMessage.set('Invalid credentials');
